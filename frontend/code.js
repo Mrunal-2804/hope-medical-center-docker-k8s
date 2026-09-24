@@ -7,7 +7,7 @@
 window.onload = async function() {
     // A. Run a connection test to ensure Flask backend is reachable
     try {
-        const response = await fetch('http://13.54.142.134:5000/api/status');
+        const response = await fetch('/api/status');
         const data = await response.json();
         console.log("Backend Connection Status:", data.message);
     } catch (error) {
@@ -41,7 +41,7 @@ async function handleFormSubmit(event) {
     };
 
     try {
-        const response = await fetch('http://13.54.142.134:5000/api/book-appointment', {
+        const response = await fetch('/api/book-appointment', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -77,6 +77,7 @@ async function handleRegisterSubmit(event) {
     // Reset alert visibility status
     errorBox.classList.add('hidden');
     successBox.classList.add('hidden');
+
     if (errorBox) errorBox.style.display = "none";
     if (successBox) successBox.style.display = "none";
 
@@ -91,36 +92,42 @@ async function handleRegisterSubmit(event) {
     const payload = { name, email, password };
 
     try {
-        // Broadcast data payload to Flask backend endpoint
-        const response = await fetch('http://13.54.142.134:5000/api/signup', {
+        // Send data to Flask backend
+        const response = await fetch('/api/signup', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify(payload)
         });
 
         const result = await response.json();
 
-        // Check if response is successful or OK
+        // Check if response is successful
         if (response.ok && result.status === "success") {
             successBox.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${result.message}`;
             successBox.classList.remove('hidden');
             successBox.style.display = "block";
+
             document.getElementById('registerForm').reset();
             
-            // Mark the user as authenticated in browser memory so index.html lets them in
+            // Mark the user as authenticated in browser memory
             localStorage.setItem("isLoggedIn", "true");
             
-            // Redirect smoothly straight back to your main landing index page after a 1.5 - 2 second delay
+            // Redirect to the main landing page
             setTimeout(() => { 
                 window.location.href = 'index.html'; 
             }, 1500);
+
         } else {
             errorBox.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> ${result.message || 'Registration failed.'}`;
             errorBox.classList.remove('hidden');
             errorBox.style.display = "block";
         }
+
     } catch (error) {
         console.error("Connection Error:", error);
+
         errorBox.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> Failed to communicate with the Python database server.`;
         errorBox.classList.remove('hidden');
         errorBox.style.display = "block";
